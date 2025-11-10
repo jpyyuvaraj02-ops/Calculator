@@ -23,3 +23,4 @@ This project was created for learning and practicing basic web development conce
 - **HTML** for structure  
 - **CSS** for styling (red + blue theme)  
 - **JavaScript** for calculator logic
+https://jpyyuvaraj02-ops.github.io/calculator/
