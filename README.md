@@ -22,8 +22,4 @@ This project was created for learning and practicing basic web development conce
 ## 🧪 Technologies Used
 - **HTML** for structure  
 - **CSS** for styling (red + blue theme)  
-- **JavaScript** for calculator logic  
-
----
-
-## 📁 Folder Structure
+- **JavaScript** for calculator logic
