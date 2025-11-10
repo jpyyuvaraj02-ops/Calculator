@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ta">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Yuva's Calculator</title>
+<style>
+  :root{
+    --bg:#05060a;
+    --card:#071226;
+    --red:#ff4d6d;
+    --blue:#3fb1ff;
+    --muted:#bfcbd9;
+    --glass: rgba(255,255,255,0.03);
+    --radius:16px;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  }
+
+  html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% 10%, rgba(63,177,255,0.06), transparent 10%),
+                                           radial-gradient(1000px 500px at 90% 90%, rgba(255,77,109,0.06), transparent 10%),
+                                           linear-gradient(180deg,#02030a 0%, #041026 100%); color:#e8f5ff;}
+  .wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+
+  .card{
+    width:430px;
+    max-width:96vw;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow: 0 14px 40px rgba(2,6,23,0.7);
+    border:1px solid rgba(255,255,255,0.03);
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* subtle neon glow strips */
+  .card::before{
+    content:"";
+    position:absolute;
+    left:-30%;
+    top:-20%;
+    width:160%;
+    height:40%;
+    background: linear-gradient(90deg, rgba(63,177,255,0.06), rgba(255,77,109,0.06));
+    transform: rotate(-8deg);
+    pointer-events:none;
+  }
+
+  .header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .logo{
+    width:60px;height:60px;border-radius:14px;
+    background: linear-gradient(135deg, rgba(255,77,109,0.14), rgba(63,177,255,0.14));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 8px 22px rgba(99,102,241,0.06), inset 0 -6px 12px rgba(255,255,255,0.01);
+    font-weight:800;color:linear-gradient; font-size:22px;
+    color: white;
+    letter-spacing:0.5px;
+    position:relative;
+  }
+  .logo span{
+    position:relative;
+    z-index:2;
+    font-weight:800;
+    font-size:22px;
+    color: white;
+    text-shadow: 0 4px 18px rgba(63,177,255,0.12), 0 2px 8px rgba(255,77,109,0.08);
+  }
+  h1{font-size:18px;margin:0}
+  p.sub{margin:0;font-size:12px;color:var(--muted)}
+
+  .display{
+    margin-top:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    border-radius:10px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .expr{
+    font-size:14px;color:var(--muted);min-height:18px;word-break:break-all;
+  }
+  .out{
+    font-size:22px;font-weight:700;color:#ffffff;
+    text-shadow: 0 6px 30px rgba(63,177,255,0.06);
+  }
+
+  .grid{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns: repeat(4,1fr);
+    gap:10px;
+  }
+
+  button.key{
+    background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.006));
+    border:1px solid rgba(255,255,255,0.03);
+    padding:14px 10px;border-radius:12px;
+    font-size:16px;color:var(--muted);
+    cursor:pointer;outline:none;
+    box-shadow: 0 8px 20px rgba(2,6,23,0.6);
+    transition: transform .08s ease, box-shadow .12s ease, color .08s;
+    position:relative;
+    overflow:visible;
+  }
+  button.key:active{transform:translateY(2px);}
+  button.op{color:var(--muted); font-weight:700;}
+  button.op.red{
+    color: var(--red);
+    text-shadow: 0 8px 30px rgba(255,77,109,0.06);
+  }
+  button.op.blue{
+    color: var(--blue);
+    text-shadow: 0 8px 30px rgba(63,177,255,0.06);
+  }
+  button.wide{grid-column: span 2;}
+  .bottom-row{display:flex;gap:10px;margin-top:12px}
+  .note{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+
+  /* accent glow on hover */
+  button.key:hover{
+    box-shadow: 0 12px 30px rgba(3,10,30,0.7), 0 0 22px rgba(63,177,255,0.03);
+    color:#f8fbff;
+  }
+  button.op.red:hover{ box-shadow: 0 12px 34px rgba(255,77,109,0.08); }
+  button.op.blue:hover{ box-shadow: 0 12px 34px rgba(63,177,255,0.08); }
+
+  /* equals special */
+  #equals{
+    background: linear-gradient(90deg, rgba(63,177,255,0.08), rgba(255,77,109,0.08));
+    border: 1px solid rgba(255,255,255,0.06);
+    font-weight:800;
+    color: #fff;
+    letter-spacing:0.6px;
+  }
+
+  /* responsive */
+  @media (max-width:420px){
+    .card{padding:14px}
+    .logo{width:48px;height:48px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div class="logo"><span>Y</span></div>
+        <div>
+          <h1>Yuva's Calculator</h1>
+          <p class="sub">red + blue neon theme — + - × ÷ % | power | factorial</p>
+        </div>
+      </div>
+
+      <div class="display">
+        <div class="expr" id="expr"></div>
+        <div class="out" id="output">0</div>
+      </div>
+
+      <div class="grid" id="keys">
+        <!-- row 1 -->
+        <button class="key" data-action="clear">C</button>
+        <button class="key" data-action="back">⌫</button>
+        <button class="key op red" data-value="%">%</button>
+        <button class="key op blue" data-value="/">÷</button>
+
+        <!-- row 2 -->
+        <button class="key" data-value="7">7</button>
+        <button class="key" data-value="8">8</button>
+        <button class="key" data-value="9">9</button>
+        <button class="key op blue" data-value="*">×</button>
+
+        <!-- row 3 -->
+        <button class="key" data-value="4">4</button>
+        <button class="key" data-value="5">5</button>
+        <button class="key" data-value="6">6</button>
+        <button class="key op red" data-value="-">−</button>
+
+        <!-- row 4 -->
+        <button class="key" data-value="1">1</button>
+        <button class="key" data-value="2">2</button>
+        <button class="key" data-value="3">3</button>
+        <button class="key op blue" data-value="+">+</button>
+
+        <!-- row 5 -->
+        <button class="key" data-value="0">0</button>
+        <button class="key" data-value=".">.</button>
+        <button class="key" data-action="pow" title="power">^</button>
+        <button class="key op red" data-action="fact" title="factorial">n!</button>
+      </div>
+
+      <div class="bottom-row">
+        <button class="key wide" data-action="neg">+/-</button>
+        <button class="key wide op" id="equals">=</button>
+      </div>
+
+      <p class="note">Use `%` for integer modulus. Press n! for factorial (non-negative integer).</p>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const exprEl = document.getElementById('expr');
+  const outEl = document.getElementById('output');
+  const keys = document.getElementById('keys');
+
+  let expr = "";
+  let lastAnswer = null;
+
+  function render(){
+    exprEl.textContent = expr || "";
+    outEl.textContent = (lastAnswer === null ? "0" : String(lastAnswer));
+  }
+
+  function computeExpression(input){
+    if (!input.trim()) return 0;
+    const tokens = [];
+    const re = /\s*([0-9]*\.?[0-9]+|[%\^\+\-\*\/\(\)])\s*/g;
+    let m, idx = 0;
+    while ((m = re.exec(input)) !== null) {
+      tokens.push(m[1]);
+      idx = re.lastIndex;
+    }
+    if (idx !== input.length) throw new Error("Unsupported characters or format");
+    const outputQ = [];
+    const opStack = [];
+    const isNumber = t => /^([0-9]*\.?[0-9]+)$/.test(t);
+    const precedence = { '^': 4, '%': 3, '*': 3, '/': 3, '+': 2, '-': 2 };
+    const rightAssoc = { '^': true };
+    for (let i=0;i<tokens.length;i++){
+      const t = tokens[i];
+      if (isNumber(t)) { outputQ.push(Number(t)); continue; }
+      if (t === '(') { opStack.push(t); continue; }
+      if (t === ')') {
+        while (opStack.length && opStack[opStack.length-1] !== '(') outputQ.push(opStack.pop());
+        if (!opStack.length) throw new Error("Mismatched parentheses");
+        opStack.pop();
+        continue;
+      }
+      if (t === '-' && (i===0 || (!isNumber(tokens[i-1]) && tokens[i-1] !== ')'))) {
+        outputQ.push(0);
+      }
+      while (opStack.length) {
+        const top = opStack[opStack.length-1];
+        if (top === '(') break;
+        const p1 = precedence[t] || 0;
+        const p2 = precedence[top] || 0;
+        if ( ( !rightAssoc[t] && p1 <= p2 ) || (rightAssoc[t] && p1 < p2) ) {
+          outputQ.push(opStack.pop());
+        } else break;
+      }
+      opStack.push(t);
+    }
+    while (opStack.length) {
+      const op = opStack.pop();
+      if (op === '(' || op === ')') throw new Error("Mismatched parentheses");
+      outputQ.push(op);
+    }
+    const stack = [];
+    for (const token of outputQ){
+      if (typeof token === 'number') { stack.push(token); continue; }
+      const b = stack.pop();
+      const a = stack.pop();
+      if (a === undefined || b === undefined) throw new Error("Invalid expression");
+      let res;
+      if (token === '+') res = a + b;
+      else if (token === '-') res = a - b;
+      else if (token === '*') res = a * b;
+      else if (token === '/') {
+        if (b === 0) throw new Error("Division by zero");
+        res = a / b;
+      }
+      else if (token === '%') {
+        if (!Number.isFinite(a) || !Number.isFinite(b)) throw new Error("Invalid modulus");
+        if (b === 0) throw new Error("Modulus by zero");
+        res = Math.trunc(a) % Math.trunc(b);
+      }
+      else if (token === '^') {
+        res = Math.pow(a,b);
+      } else throw new Error("Unknown operator "+token);
+      stack.push(res);
+    }
+    if (stack.length !== 1) throw new Error("Invalid expression");
+    const final = stack[0];
+    if (!Number.isFinite(final)) throw new Error("Result not finite");
+    return final;
+  }
+
+  function factorial(n){
+    if (!Number.isInteger(n) || n < 0) throw new Error("Factorial: non-negative integer required");
+    if (n > 170) throw new Error("Factorial too large");
+    let f = 1;
+    for (let i=2;i<=n;i++) f *= i;
+    return f;
+  }
+
+  keys.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const v = btn.getAttribute('data-value');
+    const action = btn.getAttribute('data-action');
+
+    if (v){
+      expr += v;
+      render();
+      return;
+    }
+
+    if (action === 'clear'){
+      expr = "";
+      lastAnswer = null;
+      render();
+      return;
+    }
+    if (action === 'back'){
+      expr = expr.slice(0,-1);
+      render();
+      return;
+    }
+    if (action === 'pow'){
+      expr += '^';
+      render();
+      return;
+    }
+    if (action === 'fact'){
+      try {
+        const parsed = computeExpression(expr || "0");
+        const val = factorial(parsed);
+        lastAnswer = val;
+        expr = String(val);
+        render();
+      } catch(err){
+        lastAnswer = err.message || "Error";
+        render();
+      }
+      return;
+    }
+    if (action === 'neg'){
+      if (!expr) { expr = "-"; render(); return; }
+      const m = expr.match(/(.*?)(-?\d+\.?\d*)$/);
+      if (m){
+        const prefix = m[1] || "";
+        const num = m[2];
+        const toggled = (num.startsWith('-') ? num.slice(1) : ('-'+num));
+        expr = prefix + toggled;
+      } else {
+        expr = "-" + expr;
+      }
+      render();
+      return;
+    }
+  });
+
+  document.getElementById('equals').addEventListener('click', ()=>{
+    try {
+      const r = computeExpression(expr || "0");
+      lastAnswer = r;
+      if (!Number.isInteger(lastAnswer)) lastAnswer = parseFloat(lastAnswer.toPrecision(12));
+      expr = String(lastAnswer);
+      render();
+    } catch(err){
+      lastAnswer = err.message || "Error";
+      render();
+    }
+  });
+
+  window.addEventListener('keydown', (ev)=>{
+    const k = ev.key;
+    if ((k >= '0' && k <= '9') || k === '.' ) { expr += k; render(); return; }
+    if (k === 'Enter') { ev.preventDefault(); document.getElementById('equals').click(); return; }
+    if (k === 'Backspace') { expr = expr.slice(0,-1); render(); return; }
+    if (k === '+') { expr += '+'; render(); return; }
+    if (k === '-') { expr += '-'; render(); return; }
+    if (k === '*') { expr += '*'; render(); return; }
+    if (k === '/') { expr += '/'; render(); return; }
+    if (k === '%') { expr += '%'; render(); return; }
+    if (k === '^') { expr += '^'; render(); return; }
+    if (k === '(' || k === ')') { expr += k; render(); return; }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
