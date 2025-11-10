@@ -23,3 +23,4 @@ This project was created for learning and practicing basic web development conce
 - **HTML** for structure  
 - **CSS** for styling (red + blue theme)  
 - **JavaScript** for calculator logic
+URL - file:///C:/Users/user/Desktop/calculator/calculator.html
